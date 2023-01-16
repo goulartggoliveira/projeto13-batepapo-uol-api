@@ -10,6 +10,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const participantsSchema = joi.object({
   name: joi.string().required().min(2),
@@ -19,7 +20,7 @@ const messageSchema = joi.object({
   from: joi.string().required(),
   to: joi.string().required().min(2),
   text: joi.string().required().min(1),
-  type: joi.string().required().valid("message", "private_message"),
+  type: joi.string().required().valid("message", "private_message").min(1),
   time: joi.string(),
 });
 
