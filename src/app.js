@@ -24,7 +24,7 @@ const messageSchema = joi.object({
 });
 
 const mongoClient = new MongoClient(process.env.MONGO_URI);
-
+const PORT = process.env.PORT || 5000;
 try {
   await mongoClient.connect();
   console.log("Connected to Mongo");
@@ -136,4 +136,27 @@ app.get("/messages", async (req, res) => {
   }
 });
 
-app.listen(5000, () => console.log("Port 5000"));
+app.post("/status", async (req, res) => {
+  const { user } = req.headers;
+
+  try {
+    const existParticipants = await participantsCollection.findOne({
+      name: user,
+    });
+    if (!existParticipants) {
+      return res.sendStatus(404);
+    }
+
+    await participantsCollection.updateOne(
+      { name: user },
+      { $set: { lastStatus: Date.now() } }
+    );
+
+    res.sendStatus(200);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+});
+
+app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
