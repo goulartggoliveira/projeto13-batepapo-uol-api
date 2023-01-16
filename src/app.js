@@ -23,7 +23,7 @@ const messageSchema = joi.object({
   time: joi.string(),
 });
 
-const mongoClient = new MongoClient(process.env.MONGO_URI);
+const mongoClient = new MongoClient(process.env.DATABASE_URL);
 const PORT = process.env.PORT || 5000;
 try {
   await mongoClient.connect();
