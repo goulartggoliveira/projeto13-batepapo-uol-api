@@ -25,7 +25,6 @@ const messageSchema = joi.object({
 });
 
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
-const PORT = process.env.PORT || 5000;
 try {
   await mongoClient.connect();
   console.log("Connected to Mongo");
@@ -174,12 +173,14 @@ setInterval(async () => {
     if (inactive.length > 0) {
       const inativos = inactive.map((participant) => {
         return {
-          from: participant.name,
-          to: "Todos",
-          text: "sai da sala...",
-          type: "status",
-          time: dayjs().format("HH:mm:ss"),
-        };
+          from: participant.name, 
+          to: 'Todos',
+           text: 'sai da sala...',
+            type: 'status',
+             time: dayjs().format('HH:mm:ss')
+            };
+
+
       });
       await messagesCollection.insertMany(inativos);
       await participantsCollection.deleteMany({
@@ -193,3 +194,4 @@ setInterval(async () => {
 }, 15000);
 
 app.listen(5000, () => console.log(`Listening on port 5000`));
+
