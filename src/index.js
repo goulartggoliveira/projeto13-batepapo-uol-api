@@ -64,4 +64,17 @@ app.post("/participants", async (req, res) => {
   }
 });
 
+app.get("/participants", async (req, res) => {
+  try {
+    const participants = await participantsCollection.find().toArray();
+    if (!participants) {
+      res.sendStatus(404);
+    }
+    res.send(participants);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+});
+
 app.listen(5000, () => console.log("Port 5000"));
