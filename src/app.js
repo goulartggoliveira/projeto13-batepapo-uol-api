@@ -52,7 +52,7 @@ app.post("/participants", async (req, res) => {
   try {
     const participantsExists = await participantsCollection.findOne({ name });
     if (participantsExists) {
-      return res.sendStatus(422);
+      return res.sendStatus(409);
     }
 
     await participantsCollection.insertOne({ name, lastStatus: Date.now() });
@@ -99,14 +99,14 @@ app.post("/messages", async (req, res) => {
   try {
     const { error } = messageSchema.validate(message, { abortEarly: false });
 
-// if(user){
-//   const validatepaticipant = participantsCollection.findOne({
-//     name: user,
-//   })
-//   if(!validatepaticipant){
-//     return res.sendStatus(422)
-//   }
-// }
+if(user){
+  const validatepaticipant = participantsCollection.findOne({
+    name: user,
+  })
+  if(!validatepaticipant){
+    return res.sendStatus(422)
+  }
+}
 
     if (error) {
       const errors = error.details.map((detail) => detail.message);
