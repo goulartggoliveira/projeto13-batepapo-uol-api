@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 dotenv.config();
 
 const app = express();
+app.use(express.json());
 
 const participantsSchema = joi.object({
   name: joi.string().required().min(2),
@@ -30,7 +31,7 @@ const messagesCollection = db.collection("messages");
 app.post("/participants", async (req, res) => {
   const { name } = req.body;
 
-  const validation = participantsSchema.validate(
+  const { error } = participantsSchema.validate(
     { name },
     { abortEarly: false }
   );
