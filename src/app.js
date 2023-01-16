@@ -33,7 +33,7 @@ try {
 }
 
 const db = mongoClient.db("bateuol");
-const participants = db.collection("participants");
+const participantsCollection = db.collection("participants");
 const messagesCollection = db.collection("messages");
 
 app.post("/participants", async (req, res) => {
@@ -50,14 +50,20 @@ app.post("/participants", async (req, res) => {
   }
 
   try {
-    const participantsExists = await participants.findOne({ name });
+    const participantsExists = await participantsCollection.findOne({ name });
     if (participantsExists) {
       return res.sendStatus(409);
     }
 
-    await participants.insertOne({ name, lastStatus: Date.now() });
+    await participantsCollection.insertOne({ name, lastStatus: Date.now() });
 
-    await messagesCollection.insertOne({from: name, to: 'Todos', text: 'entra na sala...', type: 'status', time: 'HH:MM:SS'});
+    await messagesCollection.insertOne({
+      from: name,
+      to: "Todos",
+      text: "entra na sala...",
+      type: "status",
+      time: dayjs().format("HH:mm:ss"),
+    });
 
     res.sendStatus(201);
   } catch (err) {
@@ -68,11 +74,11 @@ app.post("/participants", async (req, res) => {
 
 app.get("/participants", async (req, res) => {
   try {
-    const participant = await participants.find().toArray();
-    if (!participant) {
+    const participants = await participantsCollection.find().toArray();
+    if (!participants) {
       res.sendStatus(404);
     }
-    res.send(participant);
+    res.send(participants);
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
@@ -134,14 +140,14 @@ app.post("/status", async (req, res) => {
   const { user } = req.headers;
 
   try {
-    const existParticipants = await participants.findOne({
+    const existParticipants = await participantsCollection.findOne({
       name: user,
     });
     if (!existParticipants) {
       return res.sendStatus(404);
     }
 
-    await participants.updateOne(
+    await participantsCollection.updateOne(
       { name: user },
       { $set: { lastStatus: Date.now() } }
     );
@@ -160,7 +166,7 @@ setInterval(async () => {
   console.log(tenSeconds);
 
   try {
-    const inactive = await participants
+    const inactive = await participantsCollection
       .find({ lastStatus: { $lte: tenSeconds } })
       .toArray();
 
@@ -175,7 +181,7 @@ setInterval(async () => {
         };
       });
       await messagesCollection.insertMany(inativos);
-      await participants.deleteMany({
+      await participantsCollection.deleteMany({
         lastStatus: { lte: tenSeconds },
       });
     }
@@ -185,7 +191,4 @@ setInterval(async () => {
   }
 }, 15000);
 
-app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
-
-
-
+app.listen(5000, () => console.log(`Listening on port 5000`));
