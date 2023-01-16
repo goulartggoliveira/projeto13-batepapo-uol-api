@@ -32,7 +32,7 @@ try {
   console.log(err);
 }
 
-const db = mongoClient.db("bateuol");
+const db = mongoClient.db();
 const participantsCollection = db.collection("participants");
 const messagesCollection = db.collection("messages");
 
