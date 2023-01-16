@@ -183,7 +183,7 @@ setInterval(async () => {
 
       });
       await messagesCollection.insertMany(inativos);
-      await participantsCollection.deleteMany({
+      await participantsCollection.deleteOne({
         lastStatus: { lte: tenSeconds },
       });
     }
