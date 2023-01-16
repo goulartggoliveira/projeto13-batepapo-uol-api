@@ -99,6 +99,15 @@ app.post("/messages", async (req, res) => {
   try {
     const { error } = messageSchema.validate(message, { abortEarly: false });
 
+if(user){
+  const validatepaticipant = participantsCollection.findOne({
+    name: user,
+  })
+  if(!validatepaticipant){
+    return res.sendStatus(422)
+  }
+}
+
     if (error) {
       const errors = error.details.map((detail) => detail.message);
       return res.status(422).send(errors);
