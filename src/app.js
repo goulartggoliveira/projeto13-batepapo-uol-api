@@ -159,4 +159,36 @@ app.post("/status", async (req, res) => {
   }
 });
 
+setInterval(async () => {
+  console.log("Removidos");
+
+  const tenSeconds = Date.now() - 10000;
+  console.log(tenSeconds);
+
+  try {
+    const inactive = await participantsCollection
+      .find({ lastStatus: { $lte: tenSeconds } })
+      .toArray();
+
+    if (inactive.length > 0) {
+      const inativos = inactive.map((participant) => {
+        return {
+          from: participant.name,
+          to: "Todos",
+          text: "sai da sala...",
+          type: "status",
+          time: dayjs().format("HH:mm:ss"),
+        };
+      });
+      await messagesCollection.insertMany(inativos);
+      await participantsCollection.deleteMany({
+        lastStatus: { lte: tenSeconds },
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+}, 15000);
+
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
