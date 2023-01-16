@@ -5,25 +5,62 @@ import cors from "cors";
 import joi from "joi";
 import bcrypt from "bcrypt";
 import { v4 as uuidV4 } from "uuid";
+import dayjs from "dayjs";
+dotenv.config();
 
 const app = express();
-dotenv.config();
-app.use(cors());
-app.use(express.json());
+
+const participantsSchema = joi.object({
+  name: joi.string().required().min(2),
+});
 
 const mongoClient = new MongoClient(process.env.MONGO_URI);
-let db;
 
 try {
   await mongoClient.connect();
-} catch (err) {
-  console.log("Erro no mongo.conect", err.message);
+  console.log("Connected to Mongo");
+} catch (error) {
+  console.log(err);
 }
 
-db = mongoClient.db("DIRETORIOOOO");
-const talCollection = db.collection("COLLECTIONNNNN");
+const db = mongoClient.db("bateuol");
+const participantsCollection = db.collection("participants");
+const messagesCollection = db.collection("messages");
 
-// ROTAS:
+app.post("/participants", async (req, res) => {
+  const { name } = req.body;
 
-const port = 5000;
-app.listen(port, () => console.log(`Server running in port: ${port}`));
+  const validation = participantsSchema.validate(
+    { name },
+    { abortEarly: false }
+  );
+
+  if (error) {
+    const errors = error.details.map((detail) => detail.message);
+    return res.status(422).send(errors);
+  }
+
+  try {
+    const participantsExists = await participantsCollection.findOne({ name });
+    if (participantsExists) {
+      return res.sendStatus(409);
+    }
+
+    await participantsCollection.insertOne({ name, lastStatus: Date.now() });
+
+    await messagesCollection.insertOne({
+      from: name,
+      to: "Todos",
+      text: "entrou na sala...",
+      type: "status",
+      time: dayjs().format("HH:mm:ss"),
+    });
+
+    res.sendStatus(201);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+});
+
+app.listen(5000, () => console.log("Port 5000"));
