@@ -113,4 +113,27 @@ app.post("/messages", async (req, res) => {
   }
 });
 
+app.get("/messages", async (req, res) => {
+  const { user } = req.headers;
+  const limitador = Number(req.query.limit);
+
+  try {
+    const messages = await messagesCollection
+      .find({
+        $or: [
+          { from: user },
+          { to: { $in: [user, "Todos"] } },
+          { type: "message" },
+        ],
+      })
+      .limit(limitador)
+      .toArray();
+
+    res.send(messages);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+});
+
 app.listen(5000, () => console.log("Port 5000"));
