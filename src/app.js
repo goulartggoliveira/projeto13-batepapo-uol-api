@@ -117,20 +117,16 @@ app.post("/messages", async (req, res) => {
 });
 
 app.get("/messages", async (req, res) => {
-    const limit = Number(req.query.limit);
+    const {limit} = req.query;
     const { user } = req.headers;
     const numberLimit = Number(limit)
 
     try {
       const messages = await messagesCollection
         .find({
-          $or: [
-            { from: user },
-            { to: { $in: [user, "Todos"] } },
-            { type: "message" },
-          ],
-        })
-        .limit(limit)
+          $or: [{ from: user }, { to: { $in: [user, "Todos"] } }, { type: "message" }] })
+        .sort(({ $natural: -1 }))
+        .limit(limit === undefined ? 0 : numberLimit)
         .toArray();
 
       if (messages.length === 0) {
