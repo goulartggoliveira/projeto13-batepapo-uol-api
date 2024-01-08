@@ -139,5 +139,62 @@ app.get("/messages", async (req, res) => {
     }
 });
 
-app.listen(5000, () => console.log("rodando perfeitamente 5000"));
+app.post("/status", async (req, res) => {
+    const { user } = req.headers;
 
+    try {
+      const participantExists = await participantsCollection.findOne({
+        name: user,
+      });
+
+      if (!participantExists) {
+        return res.sendStatus(404);
+      }
+
+      await participantsCollection.updateOne(
+        {
+          name: user,
+        },
+        { $set: { lastStatus: Date.now() } }
+      );
+
+      res.sendStatus(200);
+    } catch (err) {
+      console.log(err);
+      res.sendStatus(500);
+    }
+});
+
+setInterval(async () => {
+    console.log("removido");
+  
+    const tenSecondsago = Date.now() - 10000;
+  
+    try {
+      const inactives = await participantsCollection
+        .find({ lastStatus: { $lte: tenSecondsago } })
+        .toArray();
+  
+      if (inactives.length > 0) {
+        const inactivesMessages = inactives.map((participant) => {
+          return {
+            from: participant.name,
+            to: "Todos",
+            text: "sai da sala...",
+            type: "status",
+            time: dayjs().format("HH:mm:ss"),
+          };
+        });
+  
+        await messagesCollection.insertMany(inactivesMessages);
+        await participantsCollection.deleteMany({
+          lastStatus: { $lte: tenSecondsago },
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      res.sendStatus(500);
+    }
+}, 15000);
+
+app.listen(5000, () => console.log("rodando perfeitamente 5000"));
