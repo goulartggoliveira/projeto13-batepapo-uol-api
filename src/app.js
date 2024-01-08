@@ -119,6 +119,7 @@ app.post("/messages", async (req, res) => {
 app.get("/messages", async (req, res) => {
     const limit = Number(req.query.limit);
     const { user } = req.headers;
+    const numberLimit = Number(limit)
 
     try {
       const messages = await messagesCollection
