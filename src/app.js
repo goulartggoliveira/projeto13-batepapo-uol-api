@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import joi from "joi";
 import dotenv from "dotenv";
 import dayjs from "dayjs";
@@ -120,7 +120,7 @@ app.get("/messages", async (req, res) => {
     const {limit} = req.query;
     const { user } = req.headers;
     const numberLimit = Number(limit)
-    
+
     if (limit === undefined && (numberLimit <= 0 || isNaN(numberLimit))) return res.sendStatus(422)
 
     try {
@@ -169,6 +169,23 @@ app.post("/status", async (req, res) => {
       res.sendStatus(500);
     }
 });
+
+app.delete("/messages/:id", async (req, res) => {
+  const { user } = req.headers
+  const { id } = req.params
+
+  try {
+      const message = await db.collection("messages").findOne({ _id: new ObjectId(id) })
+      if (!message) return res.sendStatus(404)
+      if (message.from !== user) return res.sendStatus(401)
+
+      await db.collection("messages").deleteOne({ _id: new ObjectId(id) })
+      res.sendStatus(200)
+
+  } catch (err) {
+      res.status(500).send(err.message)
+  }
+})
 
 setInterval(async () => {
     console.log("removido");
