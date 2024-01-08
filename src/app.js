@@ -132,7 +132,11 @@ app.get("/messages", async (req, res) => {
         .limit(limit)
         .toArray();
 
-        if (limit !== undefined && (numberLimit <= 0 || isNaN(numberLimit))) return res.sendStatus(422)
+      if (messages.length === 0) {
+        return res.status(422).send("Limite com valor inválido");
+      }
+
+      if (limit !== undefined && (numberLimit <= 0 || isNaN(numberLimit))) return res.sendStatus(422)
 
       res.send(messages);
     } catch (err) {
