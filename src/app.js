@@ -97,6 +97,10 @@ app.post("/messages", async (req, res) => {
     };
 
     try {
+
+      const participant = await db.collection("participants").findOne({ name: user })
+      if (!participant) return res.sendStatus(422)
+
       const { error } = messageSchema.validate(message, { abortEarly: false });
 
       if (error) {
@@ -198,3 +202,4 @@ setInterval(async () => {
 }, 15000);
 
 app.listen(5000, () => console.log("rodando perfeitamente 5000"));
+
